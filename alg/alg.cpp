@@ -1,7 +1,3 @@
-//
-// Created by DELL on 2024/1/3.
-//
-
 #include "alg.h"
 #include "../structure/Graph.h"
 #include <iostream>
@@ -11,10 +7,6 @@
 #include <unistd.h>
 
 using namespace std;
-void init_query(Graph &graph){
-
-    return ;
-}
 
 struct cmps {
     bool operator()(int n1,int n2) {
@@ -193,19 +185,19 @@ void pro_nodes(Graph &query,Graph &data,unordered_set<int> &kernel,unordered_map
 
 }
 
-void pre_match_order_level(vector<vector<pair<unsigned_key,unsigned_key>>> &match_order_level, vector<unsigned_key> &base_matches,unordered_map<unsigned_key,unsigned_key> &extra_matches,unordered_map<int,unordered_set<int>> &comm){
+void pre_match_order_level(vector<vector<pair<unsigned_key,unsigned_key>>> &match_order_level,unordered_map<unsigned_key,unsigned_key> &matches,unordered_map<int,unordered_set<int>> &comm){
+    unordered_set<unsigned_key> keys;
     for(auto const &com: comm){
         auto &kernels = com.second;
         for (auto it1 = kernels.begin(); it1 != kernels.end(); ++it1) {
             for (auto it2 = std::next(it1); it2 != kernels.end(); ++it2) {
-                base_matches.push_back(1<< *it1 | 1 << *it2 | 1<<com.first);
+                keys.insert(1<< *it1 | 1 << *it2 | 1<<com.first);
             }
         }
     }
 
-    unordered_set<unsigned_key> keys(base_matches.begin(), base_matches.end());
     unordered_set<unsigned_key> new_keys;
-    for(int level = 0; level< match_order_level.size(); ++level){
+    for(auto & level : match_order_level){
         while(keys.size()>1){
             auto xx = *keys.begin();
             unsigned_key yy;
@@ -213,8 +205,9 @@ void pre_match_order_level(vector<vector<pair<unsigned_key,unsigned_key>>> &matc
             for(auto i: keys){
                 if(xx & i){
                     new_keys.insert(xx | i);
-                    match_order_level[level].emplace_back(xx,i);
-                    extra_matches[xx|i]  = xx & i;
+                    level.emplace_back(xx,i);
+                    matches[xx] = xx & i;
+                    matches[i] = xx & i;
                     yy = i;
                     break;
                 }
@@ -227,7 +220,11 @@ void pre_match_order_level(vector<vector<pair<unsigned_key,unsigned_key>>> &matc
 
 }
 
-
+void init_index(int querySize,unordered_map<int,unordered_map<int,unordered_map<int,unordered_set<int>>>> &comm_index,unordered_map<int,unordered_map<int,vector<vector<int>>>> &others_table, unordered_map<unsigned_key,unordered_map<string,vector<vector<int>>>> &index,unordered_map<unsigned_key,unsigned_key> &matches){
+    for(auto key: matches){
+        //对于每一个簇 进行插入操作 但在插入的时候 要根据matches.second值 组合创建索引
+    }
+}
 //这效率要死了
 void init_index(int query_graph_length,unordered_map<int,unordered_map<int,unordered_map<int,unordered_set<int>>>> &comm_index,unordered_map<unsigned_key ,set<vector<int>>> &index,unordered_map<int,unordered_map<int,vector<vector<int>>>> &others_table){
     for(const auto& query_com: comm_index){

@@ -7,10 +7,11 @@
 
 #include <string>
 #include "../structure/Graph.h"
+#include "../structure/type.h"
 #include <map>
 #include <unordered_map>
 #include <set>
-typedef unsigned int unsigned_key;
+
 
 void init_query(Graph &graph);
 

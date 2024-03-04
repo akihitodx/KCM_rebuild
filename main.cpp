@@ -20,8 +20,6 @@ int main(int argc, char* argv[]) {
 //    string query_path = "../test/query";
 //    string data_path = "../test/data";
 //    string query_path = "../test/y_1.graph";
-    cout<<"123"<<endl;
-    sleep(100000);
     string query_path = "../test/y_8.graph";
     string data_path ="../test/yeast.graph";
 
@@ -31,9 +29,6 @@ int main(int argc, char* argv[]) {
 //        string query_path = "../test/data";
 //        string data_path = "../test/data";
 
-/*
- *
- */
     auto* query = new Graph();
     query->read_graph(query_path);
 
