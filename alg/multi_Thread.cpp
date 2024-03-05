@@ -19,12 +19,11 @@ void do_thread(unordered_map<unsigned_key, set<vector<int>>> &index,vector<pair<
     }
 
 }
-
-void do_thread_level(unordered_map<unsigned_key, set<vector<int>>> &index,vector<vector<pair<unsigned_key,unsigned_key>>> &match_order_level){
+void do_thread_level(unordered_map<unsigned_key,unordered_map<string,vector<vector<int>>>> &index,vector<vector<pair<unsigned_key,unsigned_key>>> &match_order_level){
     for(auto level : match_order_level){
         vector<thread> threads(level.size());
         for(int i = 0; i< threads.size(); i++){
-            threads[i] = thread(partial_join_level,level[i].first,level[i].second, ref(index));
+            threads[i] = thread(partial_join_level,level[i].first,level[i].second,  ref(index));
         }
         for(auto& th : threads){
             th.join();
@@ -32,59 +31,38 @@ void do_thread_level(unordered_map<unsigned_key, set<vector<int>>> &index,vector
     }
 }
 
-void partial_join_level(unsigned_key first, unsigned_key second ,unordered_map<unsigned_key, set<vector<int>>> &index){
+void partial_join_level(unsigned_key first, unsigned_key second ,unordered_map<unsigned_key,unordered_map<string,vector<vector<int>>>> &index){
     auto index_a = index[first];
     auto index_b = index[second];
-    unsigned_key new_match = first | second;
-    index[new_match]={};
-    //get same pos
-    unsigned_key match = first & second;
-    vector<int> poss;
-    int pos = 0;
-    while(match>0){
-        if(match & 1){
-            poss.push_back(pos);
+    auto new_key  = first | second;
+//    auto con_key  = first ^ second;
+    vector<int> connect;
+    unsigned_key mask = 1;
+    for(int i = 0; i<sizeof(unsigned_key) * 8; ++i){
+        //first 该位存在值 且second 该位不存在值
+        if(first & mask && !(second & mask)){
+            connect.push_back(i);
         }
-        match>>=1;
-        ++pos;
+        mask <<= 1;
     }
-    //iter
-    int x= 0,y= 0;
-    for(auto aa: index_a){
-        ++x;
-        for(auto bb: index_b){
-            ++y;
-            bool flag = true;
-            for(auto loc: poss){
-                if(aa[loc] != bb[loc]){
-                    flag = false;
-                    break;
+
+    for(const auto& ele_a: index_a){
+        if(index_b.count(ele_a.first)>0){
+            //可以GPU实现
+
+            //CPU
+            unordered_map<string,vector<vector<int>>> temp_map;
+            for(const auto& a_table: ele_a.second){
+                for(const auto& b_table: index_b[ele_a.first]){
+                    auto temp = b_table;
+                    for(auto i : connect){
+                        temp[i] = a_table[i];
+                    }
+                    auto temp_index = to_key_index(new_key,temp);
+                    temp_map[temp_index].push_back(temp);
                 }
             }
-            if(flag){
-                vector<int> temp = aa;
-                for(int i = 0;i < bb.size(); ++i){
-                    if(bb[i] != -1){
-                        temp[i] = bb[i];
-                    }
-                }
-                //unique value
-                unordered_set<int> in;
-                bool in_flag = true;
-                for(auto i : temp){
-                    if(i != -1){
-                        if(in.count(i) < 1){
-                            in.insert(i);
-                        }else{
-                            in_flag = false;
-                            break;
-                        }
-                    }
-                }
-                if(in_flag){
-                    index[new_match].insert(temp);
-                }
-            }
+            index[new_key].insert(temp_map.begin(), temp_map.end());
         }
     }
 }

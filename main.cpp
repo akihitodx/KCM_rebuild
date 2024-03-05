@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
 //    string query_path = "../test/data";
 //    string query_path = "../test/query";
 //    string data_path = "../test/data";
-//    string query_path = "../test/y_1.graph";
-    string query_path = "../test/y_8.graph";
+    string query_path = "../test/y4_6.graph";  //结果有问题
+//    string query_path = "../test/y_8.graph";
     string data_path ="../test/yeast.graph";
 
 //    string query_path = "../test/human/query_graph/query_dense_4_3.graph";
@@ -55,51 +55,24 @@ int main(int argc, char* argv[]) {
     unordered_map<int,unordered_map<int,vector<vector<int>>>> others_table;
     get_others_table(other_cand,others_table,(*query).count_v);
 
-    unordered_map<unsigned_key, set<vector<int>>> index;
-    init_index(query->count_v,comm_index,index,others_table);
-    init_index_special(query->count_v,kernel_index,special,index,*data,others_table);
-    auto origin_index = index;
-
-    vector<long> ss;
-    for(auto i : index){
-        ss.push_back(i.second.size());
-        cout<<i.second.size()<<endl;
-    }
-
-
-
-
-
-    vector<int> aa;
-    for(auto i: origin_index){
-        aa.push_back(i.second.size());
-    }
-
-    vector<pair<unsigned_key,unsigned_key>> match_order;
-    int res_num = (int)init_match_order(index,match_order);
-
-    auto q = index[21].size();
-
-
     vector<vector<pair<unsigned_key,unsigned_key>>> match_order_level;
-    match_order_level.resize(ceil(log2(index.size()+1))-1);
-    init_match_order_level(origin_index,match_order_level);
+    vector<unordered_map<unsigned_key,unsigned_key>> matches;
+    auto final_key = pre_match_order_level(match_order_level,matches,comm,special);
 
-    //test
-    vector<bitset<13>> count_1;
-    count_1.reserve(index.size());
-    for(auto i: index){
-        count_1.emplace_back(i.first);
+    int cc = 0;
+    for(auto i :match_order_level){
+        cout<<"level "<<cc<<endl;
+        for(auto j : i){
+            cout<<j.first<<"+"<<j.second<<"-->"<<(j.first|j.second) <<" "<<(j.first&j.second)<<endl;
+        }
+        ++cc;
     }
-    vector<pair<bitset<13>,bitset<13>>> bits;
-    bits.reserve(match_order.size());
-    for(auto i: match_order){
-        bits.emplace_back(bitset<13 > (i.first),bitset<13 > (i.second));
-    }
-    vector<int> count;
-    for(auto i: index){
-        count.push_back(i.second.size());
-    }
+    unordered_map<unsigned_key,unordered_map<string,unordered_set<vector<int>,VectorHash>>> index;
+    init_index(query->count_v,*data,kernel_index,comm_index,special,others_table,index,matches);
+
+//    do_thread_level(index,match_order_level);
+    part_join(index,match_order_level,matches);
+
     //join and check
 
 //    //单线程
@@ -109,7 +82,7 @@ int main(int argc, char* argv[]) {
 //    do_thread(index,match_order);
 
     //多线程 按级别分布创建线程
-    do_thread_level(index,match_order_level);
+ //   do_thread_level(index,match_order_level);
 
 //    index.clear();
 //    index[0].insert({342,1138,769,818});
@@ -121,58 +94,32 @@ int main(int argc, char* argv[]) {
     // 计算运行时间
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
 
+
     //out
+
     ofstream out("../output.txt");
     if(out.is_open()){
-        out<< "程序运行时间：" << duration.count()  << std::endl;
-        out<<"match count: "<<index[res_num].size()<<endl;
+        out<< "程序运行时间：" << duration.count() <<"microseconds"<< std::endl;
 
         //wirte complete match_table
-        for(const auto& vec: index[res_num]){
-            for(auto i: vec){
-                out<<i<<" ";
+        int count = 0;
+        for(const auto& ll: index[final_key]){
+            for(auto l : ll.second){
+                ++count;
+                for(auto i: l){
+                    out<<i<<" ";
+                }
+                out<<endl;
             }
-            out<<endl;
         }
-
+        out<<"match count: "<<count<<endl;
         out.close();
+
+        cout<<"find match count: "<<count<<endl;
         cout<<"finished work"<<endl;
     }else{
         cerr<<"unable to open the file"<<endl;
     }
-//    vector<int> aaa={4674,4675,4676,4677};
-//    index[0].insert(aaa);
-
-//    vector<vector<int>> error;
-//    for(auto table: index.begin()->second){
-//        bool flag = true;
-//        for(int i= 0; i<table.size();++i){
-//            if(!flag) break;
-//            if(data->label[table[i]] != query->label[i]) return 100;
-//            auto neis = query->adj[i];
-//            for(auto nei: neis){
-//                if(data->adj[table[i]].count(table[nei]) == 0){
-//                    error.push_back(table);
-//                    flag = false;
-//                    break;
-//                }
-//            }
-//        }
-//    }
-
-//    auto a = data->adj[342];
-//    auto b = data->adj[1138];
-//    auto c = data->adj[769];
-//    auto d = data->adj[818];
-//
-//    if(a.count(1138)==0) return 11;
-//    if(a.count(769)==0) return 12;
-//    if(b.count(342)==0) return 13;
-//    if(b.count(769)==0) return 14;
-//    if(c.count(342)==0) return 15;
-//    if(c.count(1138)==0) return 16;
-//    if(c.count(818)==0) return 17;
-//    if(d.count(769)==0) return 18;
 
 
     return 0;
