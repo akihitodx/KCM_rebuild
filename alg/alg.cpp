@@ -396,25 +396,12 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
         for(auto match: match_order_level[level]){
             auto first = match.first;
             auto second = match.second;
-            if(second==124 && first==31){
-                int a = 1;
-                int b = 1;
-
-            }
             auto new_key  = first | second;
             vector<int> connect;
             unsigned_key mask = 1;
             int first_size = 0,second_size = 0;
-            vector<int> first_table;
-            vector<int> second_table;
-            try {
-                first_table = *index[first].begin()->second.begin();
-                second_table = *index[second].begin()->second.begin();
-            }catch(const std::exception& e){
-                cout<<first<<" "<<second<<endl;
-                exit(0);
-            }
-
+            vector<int> first_table = *index[first].begin()->second.begin();
+            vector<int> second_table= *index[second].begin()->second.begin();
             for(int i = 0; i<first_table.size(); ++i){
                 if(first_table[i]!= -1) ++first_size;
                 if(second_table[i]!= -1) ++second_size;
