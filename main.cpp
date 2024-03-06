@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     ofstream out("../output.txt");
     if(out.is_open()){
-        out<< "程序运行时间：" << duration.count() <<"microseconds"<< std::endl;
+        out<< "程序运行时间：" << duration.count() <<" microseconds"<< std::endl;
 
         //wirte complete match_table
         int count = 0;
