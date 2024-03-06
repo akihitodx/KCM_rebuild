@@ -20,14 +20,14 @@ int main(int argc, char* argv[]) {
 //    string query_path = "../test/query";
 //    string data_path = "../test/data";
 //    string query_path = "../test/y4_6.graph";  //结果有问题
-    string query_path = "../test/y_8.graph";
-    string data_path ="../test/yeast.graph";
+//    string query_path = "../test/y_8.graph";
+//    string data_path ="../test/yeast.graph";
 
 //    string query_path = "../test/human/query_graph/query_dense_4_3.graph";
 //    string data_path ="../test/human/data_graph/human_temp.graph";
 
-//        string query_path = "../test/data";
-//        string data_path = "../test/data";
+        string query_path = "../test/data";
+        string data_path = "../test/data";
 
     auto* query = new Graph();
     query->read_graph(query_path);
@@ -112,8 +112,9 @@ int main(int argc, char* argv[]) {
         }
         out<<"match count: "<<count<<endl;
         out.close();
-
+        cout<<"=============="<<endl;
         cout<<"find match count: "<<count<<endl;
+        cout<<"time: "<<duration.count()<<" microseconds"<<endl;
         cout<<"finished work"<<endl;
     }else{
         cerr<<"unable to open the file"<<endl;
