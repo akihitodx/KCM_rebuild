@@ -58,8 +58,8 @@ void partial_join_level(unsigned_key first, unsigned_key second ,unordered_map<u
                     for(auto i : connect){
                         temp[i] = a_table[i];
                     }
-                    auto temp_index = to_key_index(new_key,temp);
-                    temp_map[temp_index].push_back(temp);
+//                    auto temp_index = to_key_index(new_key,temp);
+//                    temp_map[temp_index].push_back(temp);
                 }
             }
             index[new_key].insert(temp_map.begin(), temp_map.end());

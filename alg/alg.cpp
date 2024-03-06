@@ -232,8 +232,15 @@ unsigned_key pre_match_order_level(vector<vector<pair<unsigned_key,unsigned_key>
     return *keys.begin();
 }
 
-string to_key_index(unsigned_key key, const vector<int> &match_table){
+string to_key_index(vector<unordered_map<unsigned_key,unsigned_key>> &matches,int level,unsigned_key new_key, const vector<int> &match_table){
     string res;
+    unsigned_key key;
+    for(int i = level; i<matches.size();++i){
+        if(matches[i].count(new_key)>0){
+            key = matches[i][new_key];
+            break;
+        }
+    }
     unsigned_key mask =  1;
     for(int i = 0; i<sizeof(unsigned_key)* 8; ++i){
         if(key & mask){
@@ -268,10 +275,12 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                                     if(tt.first != i) continue;
                                     for(const auto& temp_ori: tt.second){
                                         auto temp = temp_ori;
+                                        unordered_set<int> ver(temp_ori.begin(), temp_ori.end());
+                                        if(ver.count(j)>0 || ver.count(data_com->first)>0) continue;
                                         temp[b_pair->first] = j;
                                         temp[query_com.first] = data_com->first;
 
-                                        auto key_index = to_key_index(find_key(key,matches),temp);
+                                        auto key_index = to_key_index(matches,0,key,temp);
                                         index[key][key_index].insert(temp);
                                     }
                                 }
@@ -281,19 +290,22 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                                     if(tt.first != j) continue;
                                     for(const auto& temp_ori: tt.second){
                                         auto temp = temp_ori;
+                                        unordered_set<int> ver(temp_ori.begin(), temp_ori.end());
+                                        if(ver.count(i)>0 || ver.count(data_com->first)>0) continue;
                                         temp[a_pair->first] = i;
                                         temp[query_com.first] = data_com->first;
-                                        auto key_index = to_key_index(find_key(key,matches),temp);
+                                        auto key_index = to_key_index(matches,0,key,temp);
                                         index[key][key_index].insert(temp);
                                     }
                                 }
                             }else if(others_table.count(a_pair->first)==0 && others_table.count(b_pair->first)==0){
                                 //a & b all not in others
+                                if(i == j) continue;
                                 vector<int> temp(querySize,-1);
                                 temp[a_pair->first] = i;
                                 temp[b_pair->first] = j;
                                 temp[query_com.first] = data_com->first;
-                                auto key_index = to_key_index(find_key(key,matches),temp);
+                                auto key_index = to_key_index(matches,0,key,temp);
                                 index[key][key_index].insert(temp);
                             }else{
                                 //a & b all in others
@@ -311,8 +323,20 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                                                     }
                                                 }
                                                 b_temp[query_com.first] = data_com->first;
-                                                auto key_index = to_key_index(find_key(key,matches),b_temp);
-                                                index[key][key_index].insert(b_temp);
+                                                unordered_set<int> ver;
+                                                bool flag = true;
+                                                for(auto el : b_temp){
+                                                    if (el != -1 && ver.count(el) == 0){
+                                                        ver.insert(el);
+                                                    }else{
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }
+                                                if(flag){
+                                                    auto key_index = to_key_index(matches,0,key,b_temp);
+                                                    index[key][key_index].insert(b_temp);
+                                                }
                                             }
                                         }
                                     }
@@ -339,7 +363,7 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                             for(const auto& temp_ori: table.second){
                                 auto temp = temp_ori;
                                 temp[spe.second] = nei;
-                                auto key_index = to_key_index(matches[0][key],temp);
+                                auto key_index = to_key_index(matches,0,key,temp);
                                 index[key][key_index].insert(temp);
                             }
                         }
@@ -350,7 +374,7 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                             for(const auto& temp_ori: table.second){
                                 auto temp = temp_ori;
                                 temp[spe.first] = node;
-                                auto key_index = to_key_index(matches[0][key],temp);
+                                auto key_index = to_key_index(matches,0,key,temp);
                                 index[key][key_index].insert(temp);
                             }
                         }
@@ -359,7 +383,7 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                         vector<int> temp(querySize,-1);
                         temp[spe.first] = node;
                         temp[spe.second] = nei;
-                        auto key_index = to_key_index(matches[0][key],temp);
+                        auto key_index = to_key_index(matches,0,key,temp);
                         index[key][key_index].insert(temp);
                     }else{
                         // node in and nei in
@@ -376,7 +400,7 @@ void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> 
                                                 b_temp[loc] = a_temp[loc];
                                             }
                                         }
-                                        auto key_index = to_key_index(matches[0][key],b_temp);
+                                        auto key_index = to_key_index(matches,0,key,b_temp);
                                         index[key][key_index].insert(b_temp);
                                     }
                                 }
@@ -407,12 +431,11 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
                 if(second_table[i]!= -1) ++second_size;
             }
             if(first_size < second_size){
-                for(int i = 0; i<sizeof(unsigned_key) * 8; ++i){
+                for(int i = 0; i<first_table.size(); ++i){
                     //first 该位存在值 且second 该位不存在值
-                    if(first & mask && !(second & mask)){
+                    if(first_table[i] != -1 && second_table[i] == -1){
                         connect.push_back(i);
                     }
-                    mask <<= 1;
                 }
                 for(const auto& ele_a: index[first]){
                     if (index[second].count(ele_a.first) > 0){
@@ -433,7 +456,7 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
                                     }
                                 }
                                 if(flag){
-                                    auto temp_index = to_key_index(matches[level+1][new_key],temp);
+                                    auto temp_index = to_key_index(matches,level+1,new_key,temp);
                                     temp_map[temp_index].insert(temp);
                                 }
                             }
@@ -443,12 +466,11 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
                 }
             }else {
                 //first位置为基准
-                for (int i = 0; i < sizeof(unsigned_key) * 8; ++i) {
-                    //second 该位存在值 first 该位不存在值
-                    if (second & mask && !(first & mask)) {
+                for(int i = 0; i<second_table.size(); ++i){
+                    //first 该位存在值 且second 该位不存在值
+                    if(second_table[i] != -1 && first_table[i] == -1){
                         connect.push_back(i);
                     }
-                    mask <<= 1;
                 }
                 for (const auto &ele_b: index[second]) {
                     if (index[second].count(ele_b.first) > 0) {
@@ -470,7 +492,7 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
 
                                 }
                                 if (flag) {
-                                    auto temp_index = to_key_index(matches[level + 1][new_key], temp);
+                                    auto temp_index = to_key_index(matches,level+1,new_key,temp);
                                     temp_map[temp_index].insert(temp);
                                 }
                             }
@@ -495,7 +517,7 @@ void get_other_cand(unordered_map<int,unordered_map<int,unordered_map<int,unorde
             for(auto node: kernel.second){
                 for(auto nei: data.adj[node]){
                     for(auto other: others[kernel.first]){
-                        if(data.label[nei] == query.label[other]){
+                        if(data.label[nei] == query.label[other] ){
                             other_cand[kernel.first][node][other].insert(nei);
                         }
                     }

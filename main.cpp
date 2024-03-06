@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
 //    string query_path = "../test/data";
 //    string query_path = "../test/query";
 //    string data_path = "../test/data";
-    string query_path = "../test/y4_6.graph";  //结果有问题
-//    string query_path = "../test/y_8.graph";
+//    string query_path = "../test/y4_6.graph";  //结果有问题
+    string query_path = "../test/y_8.graph";
     string data_path ="../test/yeast.graph";
 
 //    string query_path = "../test/human/query_graph/query_dense_4_3.graph";
@@ -94,9 +94,7 @@ int main(int argc, char* argv[]) {
     // 计算运行时间
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
 
-
     //out
-
     ofstream out("../output.txt");
     if(out.is_open()){
         out<< "程序运行时间：" << duration.count() <<" microseconds"<< std::endl;
@@ -121,6 +119,33 @@ int main(int argc, char* argv[]) {
         cerr<<"unable to open the file"<<endl;
     }
 
+    //test
+    int ccc = 0;
+    for(const auto& ll: index[final_key]){
+        for(auto l : ll.second){
+            unordered_set<int> set;
+            for(int i = 0; i< l.size(); ++i){
+                if(set.count(l[i])>0){
+                    cout<<"error"<<endl;
+                    return ccc;
+                }else{
+                    set.insert(l[i]);
+                }
+                if(data->label[l[i]] != query->label[i]){
+                    cout<<"error"<<endl;
+                    return 222;
+                }
+                for(auto nei: query->adj[i]){
+                    if(query->label[nei] != data->label[l[nei]]){
+                        cout<<"error"<<endl;
+                        return 333;
+                    }
+                }
+            }
+            ++ccc;
+
+        }
+    }
 
     return 0;
 

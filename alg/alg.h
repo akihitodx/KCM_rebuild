@@ -23,7 +23,7 @@ void pro_nodes(Graph &query,Graph &data,unordered_set<int> &kernel,unordered_map
 
 unsigned_key pre_match_order_level(vector<vector<pair<unsigned_key,unsigned_key>>> &match_order_level,vector<unordered_map<unsigned_key,unsigned_key>> &matches,unordered_map<int,unordered_set<int>> &comm,set<pair<int,int>> &special);
 
-string to_key_index(unsigned_key key, const vector<int> &match_table);
+string to_key_index(vector<unordered_map<unsigned_key,unsigned_key>> &matches,int level, unsigned_key new_key, const vector<int> &match_table);
 void init_index(int querySize,Graph &data,unordered_map<int,unordered_set<int>> &kernel_index,unordered_map<int,unordered_map<int,unordered_map<int,unordered_set<int>>>> &comm_index,set<pair<int,int>> &special,unordered_map<int,unordered_map<int,vector<vector<int>>>> &others_table, unordered_map<unsigned_key,unordered_map<string,unordered_set<vector<int>,VectorHash>>> &index,vector<unordered_map<unsigned_key,unsigned_key>> &matches);
 
 
