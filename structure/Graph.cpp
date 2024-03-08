@@ -12,7 +12,7 @@ void Graph::read_graph(const string& path) {
     ifs.open(path);
     if(!ifs.is_open()){
         cout <<path <<" open failed"<<endl;
-        exit(0);
+        return;
     }
     vector<int> nei;
     char type;

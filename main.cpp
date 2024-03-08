@@ -10,25 +10,37 @@
 #include <unistd.h>
 #include <cmath>
 
-using namespace std;
+pair<long,int>  do_func(const string &query_path, const string &data_path);
 
+using namespace std;
 int main(int argc, char* argv[]) {
 
-//    string query_path = "../test/demo1";
-//    string query_path = "../test/demo2";
-//    string query_path = "../test/data";
-//    string query_path = "../test/query";
-//    string data_path = "../test/data";
-//    string query_path = "../test/y4_6.graph";  //结果有问题
-//    string query_path = "../test/y_8.graph";
-//    string data_path ="../test/yeast.graph";
+    string query_path,data_path;
+    ifstream inputFile("../path");
+    ofstream out("../ret");
+    if(inputFile.is_open() && out.is_open()){
+        getline(inputFile,data_path);
+        if (!data_path.empty() && data_path[data_path.length() - 1] == '\r') {
+            data_path.erase(data_path.length() - 1);
+        }
+        while(getline(inputFile,query_path)){
+            if (!query_path.empty() && query_path[query_path.length() - 1] == '\r') {
+                query_path.erase(query_path.length() - 1);
+            }
+            auto ret = do_func(query_path,data_path);
+            out<<query_path<<" :"<<ret.first<<" ,"<<ret.second<<" ,mis "<<ret.second *4 <<endl;
+        }
+        inputFile.close();
+        out.close();
+    }else{
+        cout<<"open path or ret file error"<<endl;
+    }
 
-//    string query_path = "../test/human/query_graph/query_dense_4_3.graph";
-//    string data_path ="../test/human/data_graph/human_temp.graph";
+    return 0;
 
-        string query_path = "../test/data";
-        string data_path = "../test/data";
+}
 
+pair<long,int> do_func(const string &query_path, const string &data_path) {
     auto* query = new Graph();
     query->read_graph(query_path);
 
@@ -82,7 +94,7 @@ int main(int argc, char* argv[]) {
 //    do_thread(index,match_order);
 
     //多线程 按级别分布创建线程
- //   do_thread_level(index,match_order_level);
+//   do_thread_level(index,match_order_level);
 
 //    index.clear();
 //    index[0].insert({342,1138,769,818});
@@ -92,62 +104,64 @@ int main(int argc, char* argv[]) {
     // 结束计时
     auto endTime = std::chrono::high_resolution_clock::now();
     // 计算运行时间
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+    auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
 
     //out
-    ofstream out("../output.txt");
-    if(out.is_open()){
-        out<< "程序运行时间：" << duration.count() <<" microseconds"<< std::endl;
-
-        //wirte complete match_table
-        int count = 0;
-        for(const auto& ll: index[final_key]){
-            for(auto l : ll.second){
-                ++count;
-                for(auto i: l){
-                    out<<i<<" ";
-                }
-                out<<endl;
-            }
-        }
-        out<<"match count: "<<count<<endl;
-        out.close();
-        cout<<"=============="<<endl;
-        cout<<"find match count: "<<count<<endl;
-        cout<<"time: "<<duration.count()<<" microseconds"<<endl;
-        cout<<"finished work"<<endl;
-    }else{
-        cerr<<"unable to open the file"<<endl;
-    }
+//    ofstream out("../output.txt");
+//    if(out.is_open()){
+//        out<< "程序运行时间：" << duration.count() <<" microseconds"<< endl;
+//
+//        //wirte complete match_table
+//        int count = 0;
+//        for(const auto& ll: index[final_key]){
+//            for(auto l : ll.second){
+//                ++count;
+//                for(auto i: l){
+//                    out<<i<<" ";
+//                }
+//                out<<endl;
+//            }
+//        }
+//        out<<"match count: "<<count<<endl;
+//        out.close();
+//        cout<<"=============="<<endl;
+//        cout<<"find match count: "<<count<<endl;
+//        cout<<"time: "<<duration.count()<<" microseconds"<<endl;
+//        cout<<"finished work"<<endl;
+//    }else{
+//        cerr<<"unable to open the file"<<endl;
+//    }
 
     //test
-    int ccc = 0;
-    for(const auto& ll: index[final_key]){
-        for(auto l : ll.second){
-            unordered_set<int> set;
-            for(int i = 0; i< l.size(); ++i){
-                if(set.count(l[i])>0){
-                    cout<<"error"<<endl;
-                    return ccc;
-                }else{
-                    set.insert(l[i]);
-                }
-                if(data->label[l[i]] != query->label[i]){
-                    cout<<"error"<<endl;
-                    return 222;
-                }
-                for(auto nei: query->adj[i]){
-                    if(query->label[nei] != data->label[l[nei]]){
-                        cout<<"error"<<endl;
-                        return 333;
-                    }
-                }
-            }
-            ++ccc;
-
-        }
+//    int ccc = 0;
+//    for(const auto& ll: index[final_key]){
+//        for(auto l : ll.second){
+//            unordered_set<int> set;
+//            for(int i = 0; i< l.size(); ++i){
+//                if(set.count(l[i])>0){
+//                    cout<<"error"<<endl;
+//                    return ccc;
+//                }else{
+//                    set.insert(l[i]);
+//                }
+//                if(data->label[l[i]] != query->label[i]){
+//                    cout<<"error"<<endl;
+//                    return 222;
+//                }
+//                for(auto nei: query->adj[i]){
+//                    if(query->label[nei] != data->label[l[nei]]){
+//                        cout<<"error"<<endl;
+//                        return 333;
+//                    }
+//                }
+//            }
+//            ++ccc;
+//
+//        }
+//    }
+    int c_ret = 0;
+    for(auto i: index[final_key]){
+        c_ret += i.second.size();
     }
-
-    return 0;
-
+    return {(long)duration.count(),c_ret};
 }
