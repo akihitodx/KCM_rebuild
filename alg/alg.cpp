@@ -461,7 +461,14 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
                                 }
                             }
                         }
-                        level_index[new_key].insert(temp_map.begin(), temp_map.end());
+                        for(auto i: temp_map){
+                            if(level_index[new_key].count(i.first)>0){
+                                level_index[new_key][i.first].insert(i.second.begin(), i.second.end());
+                            }else{
+                                level_index[new_key].insert(temp_map.begin(), temp_map.end());
+                                break;
+                            }
+                        }
                     }
                 }
             }else {
@@ -473,7 +480,7 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
                     }
                 }
                 for (const auto &ele_b: index[second]) {
-                    if (index[second].count(ele_b.first) > 0) {
+                    if (index[first].count(ele_b.first) > 0) {
                         unordered_map<string, unordered_set<vector<int>, VectorHash>> temp_map;
                         for (const auto &b_table: ele_b.second) {
                             for (const auto &a_table: index[first][ele_b.first]) {
@@ -497,7 +504,14 @@ void part_join(unordered_map<unsigned_key,unordered_map<string,unordered_set<vec
                                 }
                             }
                         }
-                        level_index[new_key].insert(temp_map.begin(), temp_map.end());
+                        for(auto i: temp_map){
+                            if(level_index[new_key].count(i.first)>0){
+                                level_index[new_key][i.first].insert(i.second.begin(), i.second.end());
+                            }else{
+                                level_index[new_key].insert(temp_map.begin(), temp_map.end());
+                                break;
+                            }
+                        }
                     }
                 }
             }

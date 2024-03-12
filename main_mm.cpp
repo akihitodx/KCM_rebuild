@@ -10,14 +10,38 @@
 #include <unistd.h>
 #include <cmath>
 
+pair<long,int>  do_func(const string &query_path, const string &data_path);
 
 using namespace std;
 int main(int argc, char* argv[]) {
+
+    string query_path,data_path;
+    ifstream inputFile("../path");
+    ofstream out("../ret");
+    if(inputFile.is_open() && out.is_open()){
+        getline(inputFile,data_path);
+        if (!data_path.empty() && data_path[data_path.length() - 1] == '\r') {
+            data_path.erase(data_path.length() - 1);
+        }
+        while(getline(inputFile,query_path)){
+            if (!query_path.empty() && query_path[query_path.length() - 1] == '\r') {
+                query_path.erase(query_path.length() - 1);
+            }
+            auto ret = do_func(query_path,data_path);
+            out<<query_path<<" :"<<ret.first<<" ,"<<ret.second<<" ,mis "<<ret.second *4 <<endl;
+        }
+        inputFile.close();
+        out.close();
+    }else{
+        cout<<"open path or ret file error"<<endl;
+    }
+
+    return 0;
+
+}
+
+pair<long,int> do_func(const string &query_path, const string &data_path) {
     auto* query = new Graph();
-//    string query_path = "../test/y4_1.graph";
-//    string data_path = "../test/yeast.graph";
-    string query_path = "../test/query";
-    string data_path = "../test/data";
     query->read_graph(query_path);
 
     auto* data = new Graph();
@@ -83,30 +107,30 @@ int main(int argc, char* argv[]) {
     auto duration = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
 
     //out
-    ofstream out("../output.txt");
-    if(out.is_open()){
-        out<< "程序运行时间：" << duration.count() <<" microseconds"<< endl;
-
-        //wirte complete match_table
-        int count = 0;
-        for(const auto& ll: index[final_key]){
-            for(auto l : ll.second){
-                ++count;
-                for(auto i: l){
-                    out<<i<<" ";
-                }
-                out<<endl;
-            }
-        }
-        out<<"match count: "<<count<<endl;
-        out.close();
-        cout<<"=============="<<endl;
-        cout<<"find match count: "<<count<<endl;
-        cout<<"time: "<<duration.count()<<" microseconds"<<endl;
-        cout<<"finished work"<<endl;
-    }else{
-        cerr<<"unable to open the file"<<endl;
-    }
+//    ofstream out("../output.txt");
+//    if(out.is_open()){
+//        out<< "程序运行时间：" << duration.count() <<" microseconds"<< endl;
+//
+//        //wirte complete match_table
+//        int count = 0;
+//        for(const auto& ll: index[final_key]){
+//            for(auto l : ll.second){
+//                ++count;
+//                for(auto i: l){
+//                    out<<i<<" ";
+//                }
+//                out<<endl;
+//            }
+//        }
+//        out<<"match count: "<<count<<endl;
+//        out.close();
+//        cout<<"=============="<<endl;
+//        cout<<"find match count: "<<count<<endl;
+//        cout<<"time: "<<duration.count()<<" microseconds"<<endl;
+//        cout<<"finished work"<<endl;
+//    }else{
+//        cerr<<"unable to open the file"<<endl;
+//    }
 
     //test
 //    int ccc = 0;
@@ -135,6 +159,9 @@ int main(int argc, char* argv[]) {
 //
 //        }
 //    }
-
+    int c_ret = 0;
+    for(auto i: index[final_key]){
+        c_ret += i.second.size();
+    }
+    return {(long)duration.count(),c_ret};
 }
-
