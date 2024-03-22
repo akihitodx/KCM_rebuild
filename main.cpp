@@ -1,6 +1,6 @@
 #include <iostream>
 #include "alg/alg.h"
-#include "alg/multi_Thread.h"
+#include "alg/multi_thread.h"
 #include "structure/Graph.h"
 #include <unordered_set>
 #include <map>
@@ -14,10 +14,10 @@
 using namespace std;
 int main(int argc, char* argv[]) {
     auto* query = new Graph();
-//    string query_path = "../test/y4_1.graph";
-//    string data_path = "../test/yeast.graph";
-    string query_path = "../test/query";
-    string data_path = "../test/data";
+//    string query_path = "../test/data";
+//    string data_path = "../test/data";
+    string query_path = "../test/y8_1.graph";
+    string data_path = "../test/yeast.graph";
     query->read_graph(query_path);
 
     auto* data = new Graph();
@@ -58,19 +58,10 @@ int main(int argc, char* argv[]) {
     unordered_map<unsigned_key,unordered_map<string,unordered_set<vector<int>,VectorHash>>> index;
     init_index(query->count_v,*data,kernel_index,comm_index,special,others_table,index,matches);
 
-//    do_thread_level(index,match_order_level);
-    part_join(index,match_order_level,matches);
+//    part_join(index,match_order_level,matches);
 
-    //join and check
+    part_join_thread(index,match_order_level,matches);
 
-//    //单线程
-//    part_join(index,match_order);
-
-//    //多线程 创建全部线程
-//    do_thread(index,match_order);
-
-    //多线程 按级别分布创建线程
-//   do_thread_level(index,match_order_level);
 
 //    index.clear();
 //    index[0].insert({342,1138,769,818});
